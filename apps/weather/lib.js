@@ -383,7 +383,7 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
 
   function chooseIcon(cond) {
     if (typeof (cond)==="object") {
-      if ("code" in cond) return chooseIconByCode(cond.code);
+      //if ("code" in cond) return chooseIconByCode(cond.code);
       if ("txt" in cond) return chooseIconByTxt(cond.txt);
     } else if (typeof (cond)==="number") {
       return chooseIconByCode(cond.code);
