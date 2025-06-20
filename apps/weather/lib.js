@@ -382,10 +382,12 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
   }
 
   function chooseIcon(cond) {
-    console.log("Type"+typeof (cond));
-    
+    console.log("IsTypeObject?"+(typeof (cond)==="object"));
+    console.log("IsTypeString?"+(typeof (cond)==="string"));
+    console.log("IsTypeNumber?"+(typeof (cond)==="number"));
     if (typeof (cond)==="object") {
       //if ("code" in cond) return chooseIconByCode(cond.code);
+      console.log("Contains txt?"+("txt" in cond));
       if ("txt" in cond) return chooseIconByTxt(cond.txt);
     } else if (typeof (cond)==="number") {
       return chooseIconByCode(cond.code);
