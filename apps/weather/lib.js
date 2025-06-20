@@ -382,6 +382,8 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
   }
 
   function chooseIcon(cond) {
+    console.log("Type"+typeof (cond));
+    
     if (typeof (cond)==="object") {
       //if ("code" in cond) return chooseIconByCode(cond.code);
       if ("txt" in cond) return chooseIconByTxt(cond.txt);
