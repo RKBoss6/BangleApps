@@ -1,6 +1,6 @@
 const storage = require('Storage');
 const B2 = process.env.HWVERSION===2;
-
+var globalIconCode;
 let expiryTimeout;
 function scheduleExpiry(json) {
   if (expiryTimeout) {
@@ -29,7 +29,7 @@ function update(weatherEvent) {
       }
       weather.wrose = ['n','ne','e','se','s','sw','w','nw','n'][Math.floor((deg+22.5)/45)];
     }
-
+    
     json.weather = weather;
   }
   else {
@@ -394,16 +394,20 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
   }
 
   function chooseIcon(cond) {
-    console.log("IsTypeObject?"+(typeof (cond)==="object"));
-    console.log("IsTypeString?"+(typeof (cond)==="string"));
-    console.log("IsTypeNumber?"+(typeof (cond)==="number"));
+    
     if (typeof (cond)==="object") {
-      //if ("code" in cond) return chooseIconByCode(cond.code);
-      console.log("Contains txt?"+("txt" in cond));
-      if ("txt" in cond) return chooseIconByTxt(cond.txt);
+      if ("txt" in cond){
+        globalIconCode=cond.txt;
+        return chooseIconByTxt(cond.txt);
+      }else if ("code" in cond){
+        globalIconCode=cond.code;
+        return chooseIconByCode(cond.code);
+      }
     } else if (typeof (cond)==="number") {
+      globalIconCode=cond.code;
       return chooseIconByCode(cond.code);
     } else if (typeof (cond)==="string") {
+      globalIconCode=cond.txt;
       return chooseIconByTxt(cond.txt);
     }
     return drawUnknown;
