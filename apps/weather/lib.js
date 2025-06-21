@@ -323,7 +323,7 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
     
     if (!txt) return () => {};
     txt = txt.toLowerCase();
-    Console.log("Text: "+txt);
+    console.log("Text: "+txt);
     if (txt.includes("storm")) return drawThunderstorm;
     if (txt.includes("freezing")||txt.includes("snow")||
       txt.includes("sleet")) {
