@@ -334,16 +334,26 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
       return drawRain;
     }
     if (txt.includes("rain")) return drawShowerRain;
-    if (txt.includes("clear")||txt.includes("sunny")) return drawSun;
-    if (txt.includes("few clouds")||txt.includes("partly cloudy")) return drawFewClouds;
-    if (txt.includes("scattered clouds")) return drawCloud;
-    if (txt.includes("clouds")) return drawBrokenClouds;
+    if (txt.includes("clear")||
+      txt.includes("sunny")){
+      return drawSun;
+    }
+    if (txt.includes("few clouds")||txt.includes("partly cloudy")) {
+      return drawFewClouds;
+    }
+    if (txt.includes("scattered clouds")){
+      return drawCloud;
+    }
+    if (txt.includes("clouds")) {
+      return drawBrokenClouds;
+    }
     if (txt.includes("mist") ||
       txt.includes("smoke") ||
       txt.includes("haze") ||
       txt.includes("sand") ||
       txt.includes("dust") ||
       txt.includes("fog") ||
+      txt.includes("wind") ||
       txt.includes("ash") ||
       txt.includes("squalls") ||
       txt.includes("tornado")) {
