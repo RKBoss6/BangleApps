@@ -320,8 +320,10 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
   * Choose weather icon to display based on weather description
   */
   function chooseIconByTxt(txt) {
+    
     if (!txt) return () => {};
     txt = txt.toLowerCase();
+    Console.log("Text: "+txt);
     if (txt.includes("storm")) return drawThunderstorm;
     if (txt.includes("freezing")||txt.includes("snow")||
       txt.includes("sleet")) {
