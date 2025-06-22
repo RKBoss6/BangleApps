@@ -320,7 +320,7 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
   * Choose weather icon to display based on weather description
   */
   function chooseIconByTxt(txt) {
-    
+    console.log("Choose Icon By Text initiated");
     if (!txt) return () => {};
     txt = txt.toLowerCase();
     console.log("Text: "+txt);
