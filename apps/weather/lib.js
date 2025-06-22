@@ -394,7 +394,7 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
   }
 
   function chooseIcon(cond) {
-    
+    return chooseIconByTxt(cond.txt);
     if (typeof (cond)==="object") {
       if ("txt" in cond){
         globalIconCode=cond.txt;
