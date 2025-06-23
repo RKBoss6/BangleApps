@@ -1,6 +1,6 @@
 const storage = require('Storage');
 const B2 = process.env.HWVERSION===2;
-var globalIconCode;
+
 let expiryTimeout;
 function scheduleExpiry(json) {
   if (expiryTimeout) {
@@ -21,6 +21,11 @@ function update(weatherEvent) {
     let weather = weatherEvent.clone();
     delete weather.t;
     weather.time = Date.now();
+    // Convert string fields to numbers for iOS weather shortcut
+    const numFields = ['code', 'wdir', 'temp', 'hi', 'lo', 'hum', 'wind', 'uv', 'rain'];
+    numFields.forEach(field => {
+      if (weather[field] != null) weather[field] = +weather[field];
+    });
     if (weather.wdir != null) {
       // Convert numeric direction into human-readable label
       let deg = weather.wdir;
@@ -29,7 +34,7 @@ function update(weatherEvent) {
       }
       weather.wrose = ['n','ne','e','se','s','sw','w','nw','n'][Math.floor((deg+22.5)/45)];
     }
-    
+
     json.weather = weather;
   }
   else {
@@ -320,11 +325,9 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
   * Choose weather icon to display based on weather description
   */
   function chooseIconByTxt(txt) {
-    console.log("Choose Icon By Text initiated");
     if (!txt) return () => {};
     txt = txt.toLowerCase();
-    console.log("Text: "+txt);
-    if (txt.includes("storm")) return drawThunderstorm;
+    if (txt.includes("thunderstorm")) return drawThunderstorm;
     if (txt.includes("freezing")||txt.includes("snow")||
       txt.includes("sleet")) {
       return drawSnow;
@@ -334,26 +337,16 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
       return drawRain;
     }
     if (txt.includes("rain")) return drawShowerRain;
-    if (txt.includes("clear")||
-      txt.includes("sunny")){
-      return drawSun;
-    }
-    if (txt.includes("few clouds")||txt.includes("partly cloudy")) {
-      return drawFewClouds;
-    }
-    if (txt.includes("scattered clouds")){
-      return drawCloud;
-    }
-    if (txt.includes("clouds")) {
-      return drawBrokenClouds;
-    }
+    if (txt.includes("clear")) return drawSun;
+    if (txt.includes("few clouds")) return drawFewClouds;
+    if (txt.includes("scattered clouds")) return drawCloud;
+    if (txt.includes("clouds")) return drawBrokenClouds;
     if (txt.includes("mist") ||
       txt.includes("smoke") ||
       txt.includes("haze") ||
       txt.includes("sand") ||
       txt.includes("dust") ||
       txt.includes("fog") ||
-      txt.includes("wind") ||
       txt.includes("ash") ||
       txt.includes("squalls") ||
       txt.includes("tornado")) {
@@ -394,20 +387,12 @@ exports.drawIcon = function(cond, x, y, r, ovr, monochrome) {
   }
 
   function chooseIcon(cond) {
-    
     if (typeof (cond)==="object") {
-      if ("txt" in cond){
-        globalIconCode=cond.txt;
-        return chooseIconByTxt(cond.txt);
-      }else if ("code" in cond){
-        globalIconCode=cond.code;
-        return chooseIconByCode(cond.code);
-      }
+      if ("code" in cond) return chooseIconByCode(cond.code);
+      if ("txt" in cond) return chooseIconByTxt(cond.txt);
     } else if (typeof (cond)==="number") {
-      globalIconCode=cond.code;
       return chooseIconByCode(cond.code);
     } else if (typeof (cond)==="string") {
-      globalIconCode=cond.txt;
       return chooseIconByTxt(cond.txt);
     }
     return drawUnknown;
