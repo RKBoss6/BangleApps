@@ -5,11 +5,70 @@ let current = weather.get();
 
 Bangle.loadWidgets();
 
+// UV display cache
+let uvCache = { value: -1, color: "" };
+
 var layout = new Layout({type:"v", bgCol: g.theme.bg, c: [
   {filly: 1},
   {type: "h", filly: 0, c: [
-    {type: "custom", width: g.getWidth()/2, height: g.getWidth()/2, valign: -1, txt: "unknown", id: "icon",
-      render: l => weather.drawIcon(l, l.x+l.w/2, l.y+l.h/2, l.w/2-5)},
+    {type: "v", width: g.getWidth()/2, c: [  // Vertical container for icon + UV
+      {type: "custom", fillx: 1, height: g.getHeight()/2 - 30, valign: -1, txt: "unknown", id: "icon",
+        render: l => weather.drawIcon(l, l.x+l.w/2, l.y+l.h/2, l.w/2-5)},
+      {type: "custom", fillx: 1, height: 20, id: "uvDisplay",
+        render: l => {
+          if (!current || current.uv === undefined) return;
+          const uv = parseInt(current.uv);
+          
+          // Only recalculate color if UV value changed
+          if (uv !== uvCache.value) {
+            uvCache.value = uv;
+            if (uv <= 2) uvCache.color = "#0F0"; // green
+            else if (uv <= 5) uvCache.color = "#FF0"; // yellow
+            else if (uv <= 7) uvCache.color = "#F80"; // orange
+            else if (uv <= 10) uvCache.color = "#F00"; // red
+            else uvCache.color = "#F0F"; // purple
+          }
+          
+          // Constants
+          const maxBlocks = 11;
+          const blocks = Math.min(uv, maxBlocks);
+          const blockWidth = 4;
+          const blockHeight = 6;
+          const spacing = 1;
+          const centerY = l.y + l.h;
+          const label = "UV:"
+          
+          // Set font first to measure text width
+          g.setFont("6x8");
+          
+          // Calculate total width needed for centering
+          const labelWidth = g.stringWidth(label) + 5; // Add small gap between label and blocks
+          const blocksWidth = blocks * (blockWidth + spacing) - spacing;
+          const totalWidth = labelWidth + blocksWidth;
+          
+          // Center the entire UV display
+          const startX = l.x + (l.w - totalWidth) / 2;
+          const labelX = startX;
+          const blocksX = startX + labelWidth;
+          
+          // Draw UV label
+          g.setColor(g.theme.fg);
+          g.setFontAlign(-1, 0); // Left align
+          g.drawString(label, labelX, centerY);
+          
+          // Draw blocks with cached color
+          g.setColor(uvCache.color);
+          for (let i = 0; i < blocks; i++) {
+            g.fillRect(
+              blocksX + i * (blockWidth + spacing),
+              centerY - blockHeight/2,
+              blocksX + i * (blockWidth + spacing) + blockWidth - 1,
+              centerY + blockHeight/2
+            );
+          }
+        }
+      },
+    ]},
     {type: "v", fillx: 1, c: [
       {type: "h", pad: 2, c: [
         {type: "txt", font: "18%", id: "temp", label: "000"},
