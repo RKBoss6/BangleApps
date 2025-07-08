@@ -5,24 +5,56 @@
 
 <body>
   <h1>Bangle.js RAM Test</h1>
-  <button class="btn btn-primary" style="display:none" onclick="connectAndSend()">Gather Data</button>
+  <button class="btn btn-primary" onclick="connectAndSend()">Gather Data</button>
   <pre id="output">Waiting...</pre>
 
   <script src="https://www.puck-js.com/puck.js"></script>
   <script src="../../core/lib/customize.js"></script>
   <script>
-    function onInit(device){
-      device.gatt.getPrimaryService(...)
-  .then(...characteristic.writeValue(...))
-  .then(() => characteristic.startNotifications())
-  .then(c => c.oncharacteristicvaluechanged = e => {
-    let msg = new TextDecoder().decode(e.target.value);
-    outputEl.textContent="From Bangle: "+ msg;
-  });
+    let outputEl;
+    let tx, rx;
+
+    async function connectAndSend() {
+      outputEl.textContent = '🔌 Scanning for Bangle.js...';
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'Bangle.js' }],
+          optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
+        });
+
+        outputEl.textContent = '📶 Connecting...';
+        const gatt = await device.gatt.connect();
+
+        const service = await gatt.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
+        tx = await service.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e');
+        rx = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
+
+        await rx.startNotifications();
+        rx.addEventListener('characteristicvaluechanged', handleNotifications);
+
+        outputEl.textContent = '✅ Connected. Sending code to RAM...';
+
+        // The JS code you want to run in RAM
+        const code = `NRF.println(JSON.stringify({value:"ARRRf"}));`;
+        const payload = `EVAL\n${code}\n`;
+        const data = new TextEncoder().encode(payload);
+
+        await tx.writeValue(data);
+        outputEl.textContent += '\n📤 Code sent. Awaiting response...';
+
+      } catch (err) {
+        outputEl.textContent = '❗ Error: ' + err;
+      }
     }
-    const outputEl = document.getElementById("output");
-    Bangle.write('EVAL', 'NRF.println(JSON.stringify({value: "ARRRf"}));');
-     
+
+    function handleNotifications(event) {
+      const msg = new TextDecoder().decode(event.target.value);
+      outputEl.textContent = '📡 From Bangle: ' + msg;
+    }
+
+    window.addEventListener("load", () => {
+      outputEl = document.getElementById("output");
+    });
   </script>
 </body>
 </html>
