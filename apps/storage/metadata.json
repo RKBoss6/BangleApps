@@ -4,7 +4,10 @@
   "version": "0.01",
   "description": "Analyzes all the storage space taken up by apps on the bangle and outputs it in the web interface",
   "icon": "icon.png",
+  "tags": "tools,system",
   "custom":"custom.html",
+  "supports": ["BANGLEJS2"],
+  "storage": [],
   "customConnect": true,
   "type":"RAM"
 }
