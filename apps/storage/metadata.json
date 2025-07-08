@@ -1,0 +1,10 @@
+{ "id": "storage",
+  "name": "Storage Analyzer",   
+  "shortName": "St analyzer",
+  "version": "0.01",
+  "description": "Analyzes all the storage space taken up by apps on the bangle and outputs it in the web interface",
+  "icon": "icon.png",
+  "custom":"custom.html",
+  "customConnect": true,
+  "type":"RAM"
+}
