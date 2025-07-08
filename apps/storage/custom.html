@@ -4,37 +4,32 @@
 </head>
 
 <body>
-  <h1>Bangle.js RAdM Test</h1>
-  <button class="btn btn-primary" onclick="connectAndSend()">Gather Data</button>
+  <h1>Bangle.js RdongAM Test</h1>
+  <button class="btn btn-primary" onclick="gather()">Gather Data</button>
   <pre id="output">Waiting...</pre>
 
-  <script src="https://www.puck-js.com/puck.js"></script>
+  <script src="https://banglejs.com/apps/loader.js"></script>
+  <script src="../../core/lib/customize.js"></script>
   <script>
-    let outputEl;
+    let outputEl = document.getElementById("output");
 
-    async function connectAndSend() {
-      outputEl.textContent = '🔌 Connecting to Bangle.js...';
-
-      Puck.connect(function(conn) {
-        if (!conn) {
-          outputEl.textContent = '❗ Failed to connect.';
-          return;
-        }
-
-        outputEl.textContent = '✅ Connected. Sending code...';
-
-        conn.on('data', function(d) {
-          outputEl.textContent += "\n📡 From Bangle: " + d;
+    function gather() {
+      outputEl.textContent = '🔌 Connecting via App Loader...';
+      Bangle.connect().then(() => {
+        outputEl.textContent += '\n✅ Connected. Sending code to RAM...';
+        const code = 'NRF.println(JSON.stringify({value:"ARRRf"}));';
+        return Bangle.write('EVAL', code);
+      }).then(() => {
+        outputEl.textContent += '\n📤 Code sent! Waiting for response...';
+        // Listen for the response you printed
+        Bangle.on('msg', function handler(d) {
+          outputEl.textContent += '\n📡 From Bangle: ' + d;
+          Bangle.removeListener('msg', handler);
         });
-
-        const code = `NRF.println(JSON.stringify({value:"ARRRf"}));`;
-        Puck.write(`\x10EVAL\n${code}\n`);
+      }).catch(err => {
+        outputEl.textContent = '❗ Error: ' + err;
       });
     }
-
-    window.addEventListener("load", () => {
-      outputEl = document.getElementById("output");
-    });
   </script>
 </body>
 </html>
