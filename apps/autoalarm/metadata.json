@@ -9,7 +9,10 @@
   "supports": ["BANGLEJS2"],
   "readme": "README.md",
   "storage": [
-    {"name":"autoalarm.app.js","url":"app.js"}
+    {"name":"autoalarm.app.js","url":"app.js"},
+    {"name":"autoalarm.img","url":"icon.js", "evaluate":true}
+    
+    {
   ]
   
 }
