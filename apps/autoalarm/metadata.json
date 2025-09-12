@@ -1,0 +1,15 @@
+{
+  "id": "autoalarm",
+  "name": "Auto Alarm",
+  "version": "0.01",
+  "description": "Alarm that schedules other alarms",
+  "icon": "app.png",
+  "type": "app",
+  "tags": "tool,system",
+  "supports": ["BANGLEJS2"],
+  "readme": "README.md",
+  "storage": [
+    {"name":"autoalarm.app.js","url":"app.js"}
+  ]
+  
+}
