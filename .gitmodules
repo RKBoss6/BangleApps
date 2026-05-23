@@ -1,5 +1,6 @@
 [submodule "EspruinoAppLoaderCore"]
 	path = core
+	branch = appinfo
 	url = https://github.com/RKBoss6/EspruinoAppLoaderCore.git
 [submodule "webtools"]
 	path = webtools
