@@ -1,6 +1,7 @@
 [submodule "EspruinoAppLoaderCore"]
 	path = core
 	url = https://github.com/RKBoss6/EspruinoAppLoaderCore.git
+	branch = darkmode
 [submodule "webtools"]
 	path = webtools
 	url = https://github.com/espruino/EspruinoWebTools.git
