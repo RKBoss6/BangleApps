@@ -123,6 +123,7 @@ E.on('notify',msg=>{
     "com.nestlabs.jasper.release": "Nest",
     "com.spotify.client": "Spotify",
     "com.soundcloud.TouchApp": "SoundCloud",
+    "com.RK.BlueWatch": "BlueWatch",
     "com.disney.disneyplus": "Disney+",
     "com.hbo.hbonow": "HBO Max",
     "com.adp.adpmobile":"ADP",
