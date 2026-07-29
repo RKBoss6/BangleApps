@@ -6,6 +6,10 @@
     body,
     sender,
     tel:string,
+    reply:bool,
+    positive:bool,
+    negative:bool,
+    actions: [{title:string}],
     new:true // not read yet
   }
 */
@@ -300,6 +304,44 @@ function showMusicMessage(msg) {
   }, 400);
 }
 
+function showActionsMenu(msg) {
+  cancelReloadTimeout();
+  var menu = {"":{ title:/*LANG*/"Actions", back:() => showMessage(msg.id, true) }};
+  if (msg.reply && reply)
+    menu[/*LANG*/"Reply"] = () => {
+      msg.new = false;
+      replying = true;
+      reply.reply({msg:msg})
+        .then(r => {
+          Bluetooth.println(JSON.stringify(r));
+          replying=false;
+          returnToCheckMessages();
+        })
+        .catch(() => { 
+          replying=false; 
+          showMessage(msg.id); 
+        });
+    };  
+  // Custom actions
+  if (msg.actions) 
+    msg.actions.forEach((action, idx) => {
+      menu[action.title] = () => {
+        msg.new = false;
+        Bluetooth.println("");
+        Bluetooth.println(JSON.stringify({t:"notify",n:"INVOKE_ACTION",id:msg.id,action:idx}));
+        returnToCheckMessages();
+      };
+    });
+  if (msg.positive)
+    menu[/*LANG*/"Open"] = () => {
+      msg.new = false; 
+      cancelReloadTimeout(); 
+      Bangle.messageResponse(msg,true); 
+      returnToCheckMessages();
+    };
+  E.showMenu(menu);
+}
+
 function showMessageSettings(msg) {
   active = "settings";
   var menu = {"":{
@@ -312,6 +354,10 @@ function showMessageSettings(msg) {
   showMessage to the message list, so add the option here */
   if (process.env.BOARD=="BANGLEJS")
     menu[/*LANG*/"Message List"] = () => { returnToMain(); };
+
+  if (msg.actions && msg.actions.length) {
+    menu[/*LANG*/"Actions"] = ()=>{ showActionsMenu(msg); };
+  }
 
   if (msg.reply && reply)
     menu[/*LANG*/"Reply"] = () => {
@@ -449,7 +495,10 @@ function showMessage(msgid, persist) {
     else if (!ld)
       g.setFontAlign(-1,-1).drawString(date,r.x+6,r.y+5);
   }
-  if (msg.reply && reply) {
+  if (msg.actions && msg.actions.length) {
+    posHandler = ()=>{ showActionsMenu(msg); };
+    rowRightDraw = function(r) {g.setColor("#0f0").drawImage(atob("QRABAAAAAAAABwAAAAAAAMAHwAAAAAAAcAPgAAAAAAA8AOAAAAAAAB8AAAAAAAAAD8AAAH//////8BwAP//////8HwAf//////4PgA///////gOAAAAAAAB+AAAAAAAAAD4AAAAAAAAAHgBwAAAAAAAOAHwAAAAAAAYAPgAAAAAAAAAOAA=="),r.x+r.w-64,r.y+2);};
+  } else if (msg.reply && reply) {
     posHandler = ()=>{
       replying = true;
       msg.new = false;

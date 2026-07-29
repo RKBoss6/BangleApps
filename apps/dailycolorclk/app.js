@@ -91,27 +91,28 @@
       let R = Bangle.appRect;
       let date = new Date();
       let t = locale.time(date, 1).split(":");
-      let hourStr = " " + t[0].padStart(2, '0') + " ";
+      let hourStr = " "+String(t[0]).trim().padStart(2, '0')+" ";
       let minStr = " " + t[1].padStart(2, '0') + " ";
 
       dateStr = locale.dow(date, 1) + ', ' + locale.month(date, 1) + " " + date.getDate();
 
-      g.setColor(g.theme.bg).fillRect(0, 24, 96, 88);
-
-      g.setColor(g.theme.fg).setFontAlign(-1, 0);
+      g.setColor(g.theme.bg)
+        .fillRect(0, 24, 96, 88)
+        .setColor(g.theme.fg)
+        .setFontAlign(-1, 0);
       setFontPaytoneOne(g);
-      g.drawString(hourStr, fontBorder, hoursYPos);
-
       let yo = slopeHeight + minOffset;
-      g.setColor(bgColor).fillRect(92, 92, g.getWidth(), 152);
-      g.setFontAlign(1, -1);
+      g.drawString(hourStr, fontBorder, hoursYPos)
+        .setColor(bgColor)
+        .fillRect(92, 92, g.getWidth(), 152)
+        .setFontAlign(1, -1);
       setFontPaytoneOne(g);
-      g.setColor(g.theme.bg).drawString(minStr, g.getWidth() - 7, yo);
-
-      g.setColor(g.theme.bg).fillRect(0, slopeHeight - slopeBorder, g.getWidth(), slopeHeight);
-
-      g.setFont("Vector", 16).setFontAlign(0, 0);
-      g.drawString(dateStr, R.x + R.w / 2, R.y + R.h - 13);
+      g.setColor(g.theme.bg)
+        .drawString(minStr, g.getWidth() - 7, yo)
+        .setColor(g.theme.bg)
+        .fillRect(0, slopeHeight - slopeBorder, g.getWidth(), slopeHeight)
+        .setFont("Vector", 16).setFontAlign(0, 0)
+        .drawString(dateStr, R.x + R.w / 2, R.y + R.h - 13);
     } catch (e) {
       drawTimeout = undefined;
       throw e;

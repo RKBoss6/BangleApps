@@ -3,7 +3,7 @@
   "name": "Daily Color Clock",
   "shortName":"Daily Color",
   "icon": "Icon.png",
-  "version":"0.02",
+  "version":"0.03",
   "description": "A clock with 2 ClockInfos and a bar of color at the bottom that changes color every day.",
   "type":"clock",    
   "tags": "clock,clkinfo",
