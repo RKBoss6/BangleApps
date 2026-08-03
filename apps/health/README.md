@@ -29,6 +29,7 @@ Stores:
   * **Temperature (e.g., 25.0°C)** - Uses the internal temperature sensor. If the watch is warmer than this value (due to body heat), it assumes it is worn. This may give more accurate results for sleep tracking, as lying perfectly still in bed can falsely trigger the "Movement" check and prevent nighttime HRM readings.
 * **Daily Step Goal** - Default 10000, daily step goal for pedometer apps to use and for the step goal notification
 * **Step Goal Notification** - True if you want a notification when the daily step goal is reached
+* **UTC time** - Store health data in database in UTC time as opposed to normal time (useful if you travel between timezones a lot)
 
 
 ## Technical Info

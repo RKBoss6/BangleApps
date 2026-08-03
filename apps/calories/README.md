@@ -2,7 +2,7 @@
 Tracks calories using [`MyProfile`](https://banglejs.com/apps/?id=myprofile) data and a complex formula that takes age, gender, weight, height, heart rate, and steps into account. 
 This app also ties in with the [`Health App`](https://banglejs.com/apps/?id=health) for greater integration within the Bangle.js ecosystem.
 ## Beta Testing:
-This app is in beta testing. Any feedback is appreciated on performance, improvements, etc. Additionally, we are looking for users who can test the accuracy of this formula against other smartwatches' calorie tracking formulas. Simply tag `@RKBoss6` in any GitHub discussion/thread and help improve accuracy and performance!
+This app is still quite new, and any feedback is appreciated on performance, improvements, etc. Additionally, we are looking for users who can test the accuracy of this formula against other smartwatches' calorie tracking formulas. Simply tag `@RKBoss6` in any GitHub discussion/thread and help improve accuracy and performance!
 ## Setup:
 The app needs the data below to function properly:
 
@@ -30,7 +30,8 @@ The app uses the algorithm below:
    **Not Set (avg):** `(-37.7495+(0.5390 x Heart Rate)+(0.0362 x Weight)+(0.1375 x Age))/4.184`
 
 4. Blends the two according to the steps taken (Higher steps per min --> steps weighted more due to potential HRM inaccuracy)
-5. Returns the total calories burned in that interval, active calories (calories actively burned), and BMR calories (calories passively burned)
+5. Uses Max HRM to interpolate between how much it should weight active calories (avoids overestimates)
+6. Returns the total calories burned in that interval, active calories (calories actively burned), and BMR calories (calories passively burned)
 
 ## Clock Info
 This app adds a set of ClockInfos in the `Health` list:

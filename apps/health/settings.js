@@ -4,7 +4,8 @@
     hrmTimeout: 0,
     wearCheckTemp: 0, // 0 = Movement/Z-Axis, > 0 = Temperature check
     stepGoal: 10000,
-    stepGoalNotification: false
+    stepGoalNotification: false,
+    useUTC : false
   }, require("Storage").readJSON("health.json", true) || {});
 
   function setSettings() {
@@ -68,9 +69,17 @@
     },
 
     /*LANG*/"Step Goal Notification": {
-      value: "stepGoalNotification" in settings ? settings.stepGoalNotification : false,
-      onchange: () => {
-        settings.stepGoalNotification = !settings.stepGoalNotification;
+      value: !!settings.stepGoalNotification,
+      onchange: v => {
+        settings.stepGoalNotification = v;
+        setSettings();
+      }
+    },
+
+     /*LANG*/"UTC time": {
+      value: !!settings.useUTC,
+      onchange: v => {
+        settings.useUTC = v;
         setSettings();
       }
     },
