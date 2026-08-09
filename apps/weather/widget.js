@@ -78,7 +78,7 @@
       return;
     }
     WIDGETS.weather.width=20;
-    g.reset();
+    g.reset("widget");
     if (w.code||w.txt) {
       if(setting("widgetMonochrome")){
         buffer.clear();
