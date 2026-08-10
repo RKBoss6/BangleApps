@@ -183,6 +183,7 @@ const INTERNAL_FILES_IN_APP_TYPE = { // list of app types and files they SHOULD 
   'textinput' : ['textinput'],
   // notify?
 };
+const ID_NAMING_EXCEPTIONS = ["1button", "airqualityci", "banglebridge", "chimer", "f3bluemoon", "gbridge", "gpsautotime", "gpstimeserver", "grandfatherclock", "hralarm", "hwid_a_battery_widget", "lightswitch", "openseizure", "rndmclk", "sleeplogalarm", "worldclkinfo"];
 
 function globToRegex(pattern) {
   const ESCAPE = '.*+-?^${}()|[]\\';
@@ -250,6 +251,8 @@ apps.forEach((app,appIdx) => {
   }
   if (!app.description) ERROR(`App ${app.id} has no description`, {file:metadataFile});
   if (!app.icon) ERROR(`App ${app.id} has no icon`, {file:metadataFile});
+  if (app.type == "widget" && !app.id.startsWith("wid") && !ID_NAMING_EXCEPTIONS.includes(app.id)) ERROR(`Widget app ${app.id} id does not start with 'wid'`, {file:metadataFile});
+  if (app.type == "clkinfo" && !app.id.startsWith("clkinfo") && !ID_NAMING_EXCEPTIONS.includes(app.id)) ERROR(`ClockInfo app ${app.id} id does not start with 'clkinfo'`, {file:metadataFile});
   if (!fs.existsSync(appDir+app.icon)) ERROR(`App ${app.id} icon doesn't exist`, {file:metadataFile});
   if (app.screenshots) {
     if (!Array.isArray(app.screenshots)) ERROR(`App ${app.id} screenshots is not an array`, {file:metadataFile});

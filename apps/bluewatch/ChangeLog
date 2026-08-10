@@ -1,2 +1,3 @@
 0.01: New App!
-0.02: Use new device handshake method for more reliable connections (Must use the iOS BlueWatch app version 1.1)
+0.02: Use new device handshake method for more reliable connections (Requires BlueWatch on iOS version 1.1)
+0.03: Fix data intervals firing randomly, pairing issues, increased time between battery pushing, and queued data sending (Requires BlueWatch on iOS version 1.2)

@@ -1,4 +1,3 @@
-NRF.setAdvertising({}, { connectable: true });
 
 var blueWatch = require("bluewatch");
 var settings = require("Storage").readJSON("bluewatch.settings.json") || {
@@ -14,19 +13,25 @@ let appsUsingGPS = savedData.appsUsingGPS || [];
 global.phoneConnected = savedData.phoneConnected;
 
 function updateWeatherAndLocation() {
-  blueWatch.sendData("Request Location");
+  blueWatch.sendData("Request Location",true);
   setTimeout(function () {
-    blueWatch.sendData("Request Weather");
+    blueWatch.sendData("Request Weather",true);
   }, 60 * 10);
 }
 function setUpdateIntervals() {
+  if (weatherLocInterval)
+    clearInterval(weatherLocInterval);
+
+  if (systemDataInterval)
+    clearInterval(systemDataInterval);
+
   weatherLocInterval = setInterval(updateWeatherAndLocation, 10 * 60 * 1000);
-  systemDataInterval = setInterval(blueWatch.sendSystemData, 60 * 1000);
+  systemDataInterval = setInterval(blueWatch.sendSystemData, 6 * 60 * 1000); // 6 mins
 }
+
 Bangle.on("BlueWatchConnected", function () {
   blueWatch.sendSystemData();
   updateWeatherAndLocation();
-  blueWatch.sendHealthData();
   setUpdateIntervals();
 });
 if (global.phoneConnected) {

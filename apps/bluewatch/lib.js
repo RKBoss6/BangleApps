@@ -1,7 +1,26 @@
 let interval;
 let rxBuffer = ""; // accumulates incoming chunks
+let queue = [];
+let sending = false;
 
-NRF.setAdvertising({}, { connectable: true });
+function queueSend(msg) {
+  queue.push(msg);
+  sendNext();
+}
+
+function sendNext() {
+  if (sending) return;
+  if (!queue.length) return;
+
+  sending = true;
+
+  Bluetooth.write(queue.shift());
+
+  setTimeout(function() {
+    sending = false;
+    sendNext();
+  },40);
+}
 
 exports.sendSystemData = function () {
   let data = {
@@ -47,9 +66,7 @@ function updateWeatherData(d) {
 
 function sendData(dataString, forceSend) {
   if (global.phoneConnected || forceSend) {
-    setTimeout(function () {
-      Bluetooth.write(dataString + "\n");
-    }, 500);
+      queueSend("bwRX:"+dataString+"\n");
   } else {
     print("Phone not connected");
   }
@@ -146,8 +163,11 @@ function processMessage(raw) {
 
   if (obj) {
     switch (obj.id) {
-      case "WeatherUpdate":
+      case "Weather":
         updateWeatherData(obj);
+        break;
+      case "GPS":
+        Bangle.emit("GPS", obj);
         break;
     }
   } 
@@ -159,7 +179,6 @@ function messageReceived(data) {
     data = String(data);
   }
   rxBuffer += data;
-
   // 2. Check if the delimiter exists
   let idx = rxBuffer.indexOf("|");
 
