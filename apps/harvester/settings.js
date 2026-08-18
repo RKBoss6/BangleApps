@@ -3,10 +3,11 @@
   var pendingTimeCat = null; // XXX: Slight hack; only populated in app.js
   // #region XXX: Ensure these are kept in sync between settings.js and app.js
   const storage = require('Storage');
+  const global_settings = storage.readJSON("setting.json", true) || {};
   function readSettings() {
     return storage.readJSON(SETTINGS_FILE, 1) || {};
   }
-  function writeSettings (s) {
+  function writeSettings(s) {
     storage.write(SETTINGS_FILE, s);
   }
   function loadSettings() {
@@ -31,9 +32,9 @@
   function logHeader() {
     var cats = settings.fruitful.slice(1).concat(
       settings.decentering.slice(1).reverse()
-    ).map(c=>c.title);
+    ).map(c=>c.title.includes(',') ? '"' + c.title + '"' : c.title);
     // TODO: Include targets? Probably requires triggering changeovers more often
-    return 'Date,' + cats.join(',') + "\n";
+    return 'Date,Early Switches,' + cats.join(',') + "\n";
   }
 
   function logStartNew(prevList) {
@@ -50,6 +51,7 @@
   // #endregion
   // #region XXX: Ensure these are kept in sync between settings.js, loader-settings.js, and app.js
   const SETTINGS_FILE = "harvester.json";
+  const firstDayOfWeek = global_settings.firstDayOfWeek || 0;
   function getDefaultSettings() {
     var id1 = Math.round(Date.now()), id2 = id1 + 1; // XXX: Use proper UUIDs, probably with TS
     return {
@@ -59,10 +61,14 @@
           color: 'Green', fg: '#0f0', gy: '#020',
           title: 'Work',
           target_min: 480, sec_today: 0, id: id1,
+          target_min_override: new Array(7).fill(-1),
         },
       ],
       hour_color: 'Green',
       hour_fg: '#0f0',
+      clock_info_color: 'Green',
+      clock_info_fg: '#0f0',
+      clock_info_gy: '#020',
       cur_mode: 0,
       last_reset: null,
       decentering: [
@@ -83,13 +89,22 @@
     cat.gy = cat.gy || '#222';
     cat.title = cat.title || '??';
     cat.sec_today = 0 | cat.sec_today;
-    if (cat.target_min) cat.target_min = 0 | cat.target_min;
+    if (cat.target_min) {
+      cat.target_min = 0 | cat.target_min;
+      cat.target_min_override = cat.target_min_override || new Array(7).fill(-1);
+    }
     if (!cat.id) {
       // TODO: Use proper UUID, probably via TS library
       if (!normalizeCat._seq) {
         normalizeCat._seq = 0;
       }
       cat.id = Math.round(Date.now()) + normalizeCat._seq++;
+    }
+    if (null == cat.sec_this_week && cat.target_min) {
+      let daysBackfill = new Date().getDay() - firstDayOfWeek;
+      cat.sec_this_week = daysBackfill * cat.target_min * 60;
+    } else if (null == cat.sec_this_week) {
+      cat.sec_this_week = 0;
     }
     return cat;
   }
@@ -115,11 +130,11 @@
       s.fallow_buffer = s.total_sec_by_cat[0];
     }
 
-    s.hour_color = s.hour_color || def.hour_color;
-    s.hour_fg = s.hour_fg || def.hour_fg;
-    s.fallow_denominator = s.fallow_denominator || def.fallow_denominator;
-    s.cur_mode = s.cur_mode || def.cur_mode;
-    s.fallow_buffer = s.fallow_buffer || def.fallow_buffer;
+    for (let k in def) {
+      if (k == 'fruitful' || k == 'decentering' || k == 'total_sec_by_cat') continue;
+      s[k] = s[k] || def[k];
+    }
+
     return s;
   }
   function denormalizeSettings(s, pendingTimeCat) {
@@ -142,14 +157,14 @@
 
   // #region XXX: Ensure these are kept in sync between settings.js and loader-settings.js
   const color_options = [
-        'Lavender', 'Purple', 'Deep Blue', 'Medium Blue', 'Cyan', 'Dark Green', 'Green',
-        'Yellow', 'Orange', 'Red', 'Brick', 'Gray', 'Blk/Wht' ];
+    'Lavender', 'Purple', 'Deep Blue', 'Medium Blue', 'Cyan', 'Dark Green', 'Green',
+    'Yellow', 'Orange', 'Red', 'Brick', 'Gray', 'Blk/Wht'];
   const fg_code = [
-        '#f0f', '#80f', '#00f', '#08f', '#0ff', '#080', '#0f0',
-        '#ff0', '#f80', '#f00', '#800', '#888', null ];
+    '#f0f', '#80f', '#00f', '#08f', '#0ff', '#080', '#0f0',
+    '#ff0', '#f80', '#f00', '#800', '#888', null];
   const gy_code = [
-        '#202', '#202', '#002', '#022', '#022', '#020', '#020',
-        '#220', '#220', '#200', '#200', '#222', null ];
+    '#202', '#202', '#002', '#022', '#022', '#020', '#020',
+    '#220', '#220', '#200', '#200', '#222', null];
   // #endregion
 
   function showFruitfulMenu(curCategories) {
@@ -174,6 +189,18 @@
           value: 0 | category.target_min, min: 15, max: 600, step: 15, wrap: true,
           onchange: v => {
             category.target_min = v;
+            saveSettings(settings);
+          },
+        },
+        'Adapt to Week': {
+          value: category.adapt_to_week ?? false,
+          onchange: n => {
+            category.adapt_to_week = n;
+            if (n && !category.sec_this_week) {
+              let daysBackfill = new Date().getDay() - firstDayOfWeek;
+              let secBackfill = daysBackfill * category.target_min * 60;
+              category.sec_this_week = secBackfill;
+            }
             saveSettings(settings);
           },
         },
@@ -271,12 +298,23 @@
       'Fruitful...': () => showFruitfulMenu(settings.fruitful),
       'Divergent...': () => showDivergentMenu(settings.decentering),
       'Hour Color': {
-        value: 0 | color_options.indexOf(settings.color),
+        value: 0 | color_options.indexOf(settings.hour_color),
         min: 0, max: color_options.length - 1,
         format: v => color_options[v],
         onchange: v => {
           settings.hour_color = color_options[v];
           settings.hour_fg = fg_code[v];
+          saveSettings(settings);
+        },
+      },
+      'ClockInfo Color': {
+        value: 0 | color_options.indexOf(settings.clock_info_color),
+        min: 0, max: color_options.length - 1,
+        format: v => color_options[v],
+        onchange: v => {
+          settings.clock_info_color = color_options[v];
+          settings.clock_info_fg = fg_code[v];
+          settings.clock_info_gy = gy_code[v];
           saveSettings(settings);
         },
       },

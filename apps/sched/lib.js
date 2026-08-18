@@ -34,13 +34,27 @@ exports.getActiveAlarms = function (alarms, time) {
 // Set up a modified alarm/timer so it's ready to insert into the list of alarms. For timers, they fire the set time from now, and alarms are set to fire at the right time on the right day
 exports.updateAlarm = function(alarm) {
   var time = new Date(), currentTime = timeToMillis(time);
-  if (alarm.timer) { // if it's a timer, set the start time as a time from *now*
-    alarm.t = (currentTime + alarm.timer) % 86400000; // alarm time in day
+  if (alarm.timer) {
+    if (alarm.ot!==undefined) {
+      // if `ot` exists, the timer is currently snoozed. In that case,
+      // `t` is expected to be the time of day the snoozed alarm
+      // should trigger again. If `t` < current time of day, set
+      // `date` to tomorrow to avoid an immediate false trigger.
+      // (#4241)
+      if (alarm.t < currentTime) {
+        let tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        alarm.date = tomorrow.toLocalISOString().substr(0, 10);
+      }
+    } else {
+      // if it's a new timer, set the start time as a time from *now*
+      alarm.t = (currentTime + alarm.timer) % 86400000; // alarm time in day
+      if (alarm.t < currentTime || alarm.timer>86400000/*24h*/)
+        alarm.date = new Date(time.getTime() + alarm.timer).toLocalISOString().substr(0, 10);
+      else delete alarm.date;
+    }
     alarm.last = 0; // don't need to specify a last day for alarms
     // if timer would have gone on until a later day, set a date (fix #4220)
-    if (alarm.t < currentTime || alarm.timer>86400000/*24h*/)
-      alarm.date = new Date(time.getTime() + alarm.timer).toLocalISOString().substr(0, 10);
-    else delete alarm.date;
   } else { // If it's an alarm, default to triggering tomorrow if time < current time of day (#4232)
     if (alarm.last===undefined) {
       var time = new Date();

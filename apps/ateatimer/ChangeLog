@@ -3,3 +3,4 @@
 0.03: Flash time in green when starting the timer
 0.04: Buzz when starting and resetting timer. Fix initial draw when timer is
       running.
+0.05: Make fastload-able.

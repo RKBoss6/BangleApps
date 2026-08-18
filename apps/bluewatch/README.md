@@ -14,6 +14,12 @@ Bangle.js 1 support coming soon!
 - Automatic weather updates without any additional setup
 - Find my phone support
 - Use of the phone's GPS for Bangle.js GPS.
+- Sending and storing of heart rate, steps, battery, and active/resting calories (if installed) to Apple Health/BlueWatch app
+
+Additionally, the iOS app provides shortcuts actions to create your own workflows and automations. By hooking into when BlueWatch receives a message (see developer info), you can send messages through shortcuts that your watch receives and handles. This allows you to create complex workflows such as: 
+- When you reach home, alert your watch to change the clock to an inexact clock face to relax
+- When CarPlay is connected to your car, send a message to your watch to turn on quiet mode for driving
+- When you receive a message from a specific person, vibrate continuously so you never miss the message
 
 **Note:** This app still uses the `iOS Integration app` to handle pushing notifications from the phone to the watch.
 
@@ -36,6 +42,13 @@ To send a string or a JSON, you can use the following:
 require("bluewatch").sendData("string or object", true);
 ```
 with an optional second parameter `forceSend`. When true, it sends even if BlueWatch is not connected at the time. By default it doesn't send info unless the device handshake is completed and BlueWatch is connected
+
+In the iOS app version 1.4, you can also use the Shortcuts app to send custom messages to the watch, as well as checking connection, and pushing weather/location via shortcuts. In the Bangle app version v0.04, the watch will emit the `BlueWatchMessage` event when a new message is received, allowing you to create your own workflows and automations using shortcuts and a receiving script:
+```
+Bangle.on("BlueWatchMessage", (message) => {
+    // your receiving code here
+});
+```
 ## Author and Creator of the iOS App
 RKBoss6
 

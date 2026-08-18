@@ -93,6 +93,10 @@ function sendRawHealthData(data) {
     sendableData.movement = data.movement;
     sendableData.state = data.movement <= 150 ? "sedentary" : "moving";
   }
+  if (global.calories) {
+    sendableData.activeCalories = global.calories.activeCaloriesBurned || 0;
+    sendableData.bmrCalories = global.calories.bmrCaloriesBurned || 0;
+  }
   if (data.bpmConfidence && data.bpm) {
     if (data.bpmConfidence > 75 && data.bpm != 0) sendableData.hr = data.bpm;
     sendableData.confidence = data.bpmConfidence;
@@ -118,7 +122,7 @@ function onConnect() {
 function processMessage(raw) {
   raw = raw.trim();
   print("Processing complete message:", raw.length, "chars");
-
+  Bangle.emit("BlueWatchMessage", raw);
   let obj;
   try {
     obj = JSON.parse(raw);

@@ -103,4 +103,10 @@ function tfmt(tally) {
     return "".concat(d.getHours(), ":").concat(pad2(d.getMinutes()));
 }
 var pad2 = function (s) { return ("0" + s.toFixed(0)).slice(-2); };
-showTallies(readTallies());
+var tallyCfg = storage.readJSON("tallycfg.json", 1) || [];
+if (tallyCfg.length === 0) {
+    eval(storage.read("tally.settings.js"))(function () { return load(); });
+}
+else {
+    showTallies(readTallies());
+}

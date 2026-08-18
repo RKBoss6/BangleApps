@@ -1,7 +1,7 @@
 { "id": "harvester",
   "name": "Time Harvester",
   "allow_emulator": true,
-  "version": "0.2",
+  "version": "0.3",
   "dependencies": {"clock_info":"module"},
   "author": "TuggyNE",
   "description": "Digital clock with large segmented ring gauges to show accumulated fruitful time spent by category, and 'fallow' rest time available, as well as over-rested time",
@@ -10,7 +10,7 @@
   "type": "clock",
   "tags": "clock,tool,clkinfo",
   "supports" : ["BANGLEJS2"],
-  "screenshots": [{"url":"basic-dark.png"}],
+  "screenshots": [{"url":"basic-dark.png"}, {"url":"basic-light.png"}],
   "readme": "README.md",
   "storage": [
     {"name":"harvester.app.js","url":"app.js"},

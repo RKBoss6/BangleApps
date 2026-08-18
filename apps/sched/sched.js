@@ -16,11 +16,7 @@ function formatMS(ms) {
   }
 }
 
-function showSnoozeMenu(alarm){
-
-  Bangle.buzz(40);
-
-  function onSnooze(snoozeTime) {
+function snoozeAlarm(alarm, snoozeTime) {
     if (alarm.ot === undefined) {
       alarm.ot = alarm.t;
     }
@@ -28,18 +24,32 @@ function showSnoozeMenu(alarm){
     let currentTime = (time.getHours()*3600000)+(time.getMinutes()*60000)+(time.getSeconds()*1000);
     alarm.t = currentTime + snoozeTime;
     alarm.t %= 86400000;
+
+    // This makes updateAlarm() recompute the last alarm date so
+    // that it works correctly if we're snoozing beyond midnight
+    delete alarm.last;
+
+    require("sched").updateAlarm(alarm);
     Bangle.emit("alarmSnooze", alarm);
 
     // The updated alarm is still a member of 'alarms'
     // so writing to array writes changes back directly
     require("sched").setAlarms(alarms);
+}
+
+function showSnoozeMenu(alarm){
+
+  Bangle.buzz(40);
+
+  function onSnooze(snoozeTime) {
+    snoozeAlarm(alarm, snoozeTime);
     load();
   }
 
   if(alarm.timer){
 
-    let timerLength=alarm.timer
-    let buttons={ "15s": 15, "30s":30,"1m":60 ,"2m":120,"5m":360};
+    let timerLength=alarm.timer;
+    let buttons={ "15s": 15, "30s":30,"1m":60 ,"2m":120,"5m":300};
     let formattedLength = formatMS(timerLength)+"*";
     buttons[formattedLength] = Math.round(timerLength/1000);
     //different button lengths
@@ -67,7 +77,7 @@ function showAlarm(alarm) {
     message = (alarm.timer
       ? atob("ACQswgD//33vRcGHIQAAABVVVAAAAAAAABVVVAAAAAAAABVVVAAAAAAAABVVVAAAAAAAABVVVAAAAAAAABVVVAAAAAAAAAP/wAAAAAAAAAP/wAAAAAAAAAqqoAPAAAAAAqqqqoP8AAAAKqqqqqv/AAACqqqqqqq/wAAKqqqlWqqvwAAqqqqlVaqrAACqqqqlVVqqAAKqqqqlVVaqgAKqaqqlVVWqgAqpWqqlVVVqoAqlWqqlVVVaoCqlV6qlVVVaqCqVVfqlVVVWqCqVVf6lVVVWqKpVVX/lVVVVqqpVVV/+VVVVqqpVVV//lVVVqqpVVVfr1VVVqqpVVVfr1VVVqqpVVVb/lVVVqqpVVVW+VVVVqqpVVVVVVVVVqiqVVVVVVVVWqCqVVVVVVVVWqCqlVVVVVVVaqAqlVVVVVVVaoAqpVVVVVVVqoAKqVVVVVVWqgAKqlVVVVVaqgACqpVVVVVqqAAAqqlVVVaqoAAAKqqVVWqqgAAACqqqqqqqAAAAAKqqqqqgAAAAAAqqqqoAAAAAAAAqqoAAAAA==")
       : atob("AC0swgF97///RcEpMlVVVVVVf9VVVVVVVVX/9VVf9VVf/1VVV///1Vf9VX///VVX///VWqqlV///1Vf//9aqqqqpf//9V///2qqqqqqn///V///6qqqqqqr///X//+qqoAAKqqv//3//6qoAAAAKqr//3//qqAAAAAAqq//3/+qoAADwAAKqv/3/+qgAADwAACqv/3/aqAAADwAAAqp/19qoAAADwAAAKqfV1qgAAADwAAACqXVWqgAAADwAAACqlVWqAAAADwAAAAqlVWqAAAADwAAAAqlVWqAAAADwAAAAqlVaoAAAADwAAAAKpVaoAAAADwAAAAKpVaoAAAADwAAAAKpVaoAAAAOsAAAAKpVaoAAAAOsAAAAKpVaoAAAAL/AAAAKpVaoAAAAgPwAAAKpVaoAAACAD8AAAKpVWqAAAIAA/AAAqlVWqAAAgAAPwAAqlVWqAACAAADwAAqlVWqgAIAAAAAACqlVVqgAgAAAAAACqVVVqoAAAAAAAAKqVVVaqAAAAAAAAqpVVVWqgAAAAAACqlVVVWqoAAAAAAKqlVVVVqqAAAAAAqqVVVVVaqoAAAAKqpVVVVVeqqoAAKqqtVVVVV/6qqqqqqr/VVVVX/2qqqqqqn/1VVVf/VaqqqqpV/9VVVf9VVWqqlVVf9VVVf1VVVVVVVVX9VQ==")
-    ) + " " + message
+    ) + " " + message;
   }
 
   Bangle.loadWidgets();
@@ -83,14 +93,7 @@ function showAlarm(alarm) {
       return;
     }
     if (sleep==1) {
-      if (alarm.ot === undefined) {
-        alarm.ot = alarm.t;
-      }
-      let time = new Date();
-      let currentTime = (time.getHours()*3600000)+(time.getMinutes()*60000)+(time.getSeconds()*1000);
-      alarm.t = currentTime + settings.defaultSnoozeMillis;
-      alarm.t %= 86400000;
-      Bangle.emit("alarmSnooze", alarm);
+      snoozeAlarm(alarm, settings.defaultSnoozeMillis);
     } else { // sleep=2, stop the alarm
       let del = alarm.del === undefined ? settings.defaultDeleteExpiredTimers : alarm.del;
       if (del) {
@@ -110,11 +113,12 @@ function showAlarm(alarm) {
         }
       }
       Bangle.emit("alarmDismiss", alarm);
+
+      // The updated alarm is still a member of 'alarms'
+      // so writing to array writes changes back directly
+      require("sched").setAlarms(alarms);
     }
 
-    // The updated alarm is still a member of 'alarms'
-    // so writing to array writes changes back directly
-    require("sched").setAlarms(alarms);
     load();
   }
 

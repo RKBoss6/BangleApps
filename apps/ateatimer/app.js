@@ -1,8 +1,12 @@
+{
 // Tea Timer Application for Bangle.js 2 using sched library
 
+"Bangle.loadWidgets()" // HACK: Trick launch_utils that we load widgets so we get a pass to be fastloaded into. We don't mind widgets here but have no use for them either.
+if (global.WIDGETS) require("widget_utils").hide(); 
+
 const APP_RECT = Bangle.appRect;
-const CENTER_Y = APP_RECT.y+APP_RECT.w/2;
-const CENTER_X = APP_RECT.x+APP_RECT.h/2;
+const CENTER_Y = APP_RECT.y+APP_RECT.h/2;
+const CENTER_X = APP_RECT.x+APP_RECT.w/2;
 
 let timerDuration = (() => {
   let file = require("Storage").open("ateatimer.data", "r");
@@ -12,12 +16,12 @@ let timerDuration = (() => {
 let timeRemaining = timerDuration;
 let timerRunning = false;
 
-function saveDefaultDuration() {
+const saveDefaultDuration = function() {
   let file = require("Storage").open("ateatimer.data", "w");
   file.write(timerDuration.toString());
 }
 
-function drawTime() {
+const drawTime = function() {
   const TIME_RECT = {x:APP_RECT.x, y:CENTER_Y-20, w:APP_RECT.w, h:40}
   g.clearRect(TIME_RECT);
   g.setFont("Vector", 40);
@@ -33,25 +37,27 @@ function drawTime() {
   g.flip();
 }
 
-function drawButtons() {
+const drawButtons = function() {
+
+  const ADJUST_FOR_WIDGETS_Y = APP_RECT.y == 0 ? 0 : APP_RECT.y/4;
   // Draw Increase button (triangle pointing up)
   g.fillPoly([
-    CENTER_X, CENTER_Y - 80, // Top vertex
-    CENTER_X - 20, CENTER_Y - 60, // Bottom-left vertex
-    CENTER_X + 20, CENTER_Y - 60  // Bottom-right vertex
+    CENTER_X, CENTER_Y - 80 + ADJUST_FOR_WIDGETS_Y, // Top vertex
+    CENTER_X - 20, CENTER_Y - 60 + ADJUST_FOR_WIDGETS_Y, // Bottom-left vertex
+    CENTER_X + 20, CENTER_Y - 60 + ADJUST_FOR_WIDGETS_Y  // Bottom-right vertex
   ]);
 
   // Draw Decrease button (triangle pointing down)
   g.fillPoly([
-    CENTER_X, CENTER_Y + 80, // Bottom vertex
-    CENTER_X - 20, CENTER_Y + 60, // Top-left vertex
-    CENTER_X + 20, CENTER_Y + 60  // Top-right vertex
+    CENTER_X, CENTER_Y + 80 - ADJUST_FOR_WIDGETS_Y, // Bottom vertex
+    CENTER_X - 20, CENTER_Y + 60 - ADJUST_FOR_WIDGETS_Y, // Top-left vertex
+    CENTER_X + 20, CENTER_Y + 60 - ADJUST_FOR_WIDGETS_Y // Top-right vertex
   ]);
 
   g.flip();
 }
 
-function drawInit() {
+const drawInit = function() {
   g.clear(true);
   drawButtons();
   drawTime();
@@ -59,11 +65,11 @@ function drawInit() {
 
 let updateIntervalID;
 let clearUpdateInterval = ()=>{
-  clearInterval(updateIntervalID);
+  if (updateIntervalID) clearInterval(updateIntervalID);
   updateIntervalID = undefined;
 }
 
-function startTimer() {
+const startTimer = function() {
   if (timerRunning) return;
   if (timeRemaining == 0) return;
   timerRunning = true;
@@ -85,7 +91,7 @@ function startTimer() {
   updateIntervalID = setInterval(updateDisplay, 1000);
 }
 
-function scheduleTimer() {
+const scheduleTimer = function() {
   // Schedule a new timer using the sched library
   require("sched").setAlarm("ateatimer", {
     msg: "Tea is ready!",
@@ -97,7 +103,7 @@ function scheduleTimer() {
   require("sched").reload();
 }
 
-function resetTimer() {
+const resetTimer = function() {
   // Cancel the existing timer
   require("sched").setAlarm("ateatimer", undefined);
   require("sched").reload();
@@ -109,7 +115,7 @@ function resetTimer() {
   Bangle.buzz(75);
 }
 
-function adjustTime(amount) {
+let adjustTime = function(amount) {
   if (-amount > timeRemaining) {
     // Return if result will be negative
     return;
@@ -122,7 +128,7 @@ function adjustTime(amount) {
     if (alarm) {
       // Cancel the current alarm
       require("sched").setAlarm("ateatimer", undefined);
-      
+
       // Set a new alarm with the updated time
       scheduleTimer();
     }
@@ -131,8 +137,7 @@ function adjustTime(amount) {
   drawTime();
 }
 
-function handleTouch(x, y) {
-
+let handleTouch = (_, xy)=>{((_, y)=>{
   if (y < CENTER_Y - 40) {
     // Increase button area
     adjustTime(60);
@@ -145,7 +150,7 @@ function handleTouch(x, y) {
       startTimer();
     }
   }
-}
+})(_, xy.y)}
 
 let updateTimeRemaining = ()=>{
   let alarm = require("sched").getAlarm("ateatimer");
@@ -153,7 +158,7 @@ let updateTimeRemaining = ()=>{
 }
 
 // Function to update the display every second
-function updateDisplay() {
+const updateDisplay = function() {
   if (timerRunning) {
     updateTimeRemaining();
     drawTime();
@@ -166,7 +171,7 @@ function updateDisplay() {
 }
 
 // Handle physical button press for resetting timer
-setWatch(() => {
+const BTN_HANDLER = setWatch(() => {
   if (timerRunning) {
     resetTimer();
   } else {
@@ -175,9 +180,7 @@ setWatch(() => {
 }, BTN1, { repeat: true, edge: "falling" });
 
 // Handle touch
-Bangle.on("touch", (zone, xy) => {
-  handleTouch(xy.x, xy.y, false);
-});
+Bangle.on("touch", handleTouch);
 
 let isRunning = require("sched").getAlarm("ateatimer");
 if (isRunning) {
@@ -188,3 +191,12 @@ if (isRunning) {
 }
 // Draw the initial timer display
 drawInit();
+global.BACK = Bangle.load; // Compatibility with backswipe app.
+Bangle.uiRemove = ()=>{ // Make it possible to fastload out of the app.
+  Bangle.removeListener("touch", handleTouch);
+  if (BTN_HANDLER) clearWatch(BTN_HANDLER);
+  clearUpdateInterval();
+  delete global.BACK;
+  if (global.WIDGETS) require("widget_utils").show();
+}
+}

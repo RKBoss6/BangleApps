@@ -99,7 +99,9 @@ function setMyLocation(d) {
   numFields.forEach((field) => {
     if (locationJson[field] != null) locationJson[field] = +locationJson[field];
   });
-
+  let myLocationSaved = require("Storage").readJSON("mylocation.json", true) || {}
+  
+  
   //load mylocation file
   let myLocationJson = Object.assign(
     {
@@ -110,12 +112,14 @@ function setMyLocation(d) {
     require("Storage").readJSON("mylocation.json", true) || {}
   );
   //remove notification from phone
-  if (
-    Math.abs(myLocationJson.lat - locationJson.lat) < 0.0001 &&
-    Math.abs(myLocationJson.lon - locationJson.lon) < 0.0001
-  ) {
-    //same location, do not write
-    return;
+  if(myLocationSaved.lat){
+    if (
+      Math.abs(myLocationJson.lat - locationJson.lat) < 0.0001 &&
+      Math.abs(myLocationJson.lon - locationJson.lon) < 0.0001
+    ) {
+      //same location, do not write
+      return;
+    }
   }
 
   myLocationJson.lon = locationJson.lon;
@@ -131,6 +135,5 @@ function saveData() {
 }
 
 E.on("kill", function () {
-  //save cals counted
   saveData();
 });
