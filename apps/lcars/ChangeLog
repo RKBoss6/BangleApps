@@ -30,3 +30,5 @@
 0.30: Add many new colors to the settings and allows random colors on startup if enabled.
 0.31: Replace degree symbol in temperature by '.
 0.32: Fix settings - permit CoreT as an option for the rows.
+0.33: Stop deleting the timer alarm when switching away from clock (bug introduced in v0.29).
+0.34: Fix lint warnings. Harmonise file names with rest of repository.

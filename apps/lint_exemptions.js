@@ -183,13 +183,6 @@ module.exports = {
       "no-undef"
     ]
   },
-  "apps/lcars/lcars.app.js": {
-    "hash": "297b92373c9e8db3ba31cb3aa42909d18a1951eef9bd7e8e0847957aa411765d",
-    "rules": [
-      "no-unused-vars",
-      "no-undef"
-    ]
-  },
   "apps/widagps/widget.js": {
     "hash": "a58cdc481962575ef0aa0bfaedcc1f9de3ce966218c5b16168d8ed8b4b9672b8",
     "rules": [

@@ -23,16 +23,6 @@ for (const key in saved_settings) {
   settings[key] = saved_settings[key];
 }
 
-
-//Colors to use
-var color_options = [
-  'Green', 'Orange', 'Cyan', 'Purple', 'Red', 'Blue', 'Yellow', 'White',
-  'Purple', 'Pink', 'Light Green', 'Brown', 'Turquoise', 'Magenta', 'Lime',
-  'Gold', 'Sky Blue', 'Rose', 'Lavender', 'Amber', 'Indigo', 'Teal',
-  'Crimson', 'Maroon', 'Firebrick', 'Dark Red', 'Aqua', 'Emerald', 'Royal Blue',
-  'Sunset Orange', 'Turquoise Blue', 'Hot Pink', 'Goldenrod', 'Deep Sky Blue'
-];
-
 var bg_code = [
   '#00ff00', '#FF9900', '#0094FF', '#FF00DC', '#ff0000', '#0000ff', '#ffef00', '#FFFFFF',
   '#FF00FF', '#6C00FF', '#99FF00', '#8B4513', '#40E0D0', '#FF00FF', '#00FF00', '#FFD700',
@@ -78,6 +68,7 @@ let convert24to16 = function(input)
 
 //Converting colors to the correct format.
 
+let color1C, color2C, color3C; // fix lint warning no-undef
 let randomColors = function () {
 
   if (settings.randomColors) {
@@ -290,9 +281,9 @@ let printRow = function(text, value, y, c){
   g.drawString(text, 135, y);
 
   // Plot text
-  width = g.stringWidth(value);
+  const WIDTH = g.stringWidth(value);
   g.setColor(cBlack);
-  g.fillRect(130-width-8, y-2, 130, y+18);
+  g.fillRect(130-WIDTH-8, y-2, 130, y+18);
   g.setColor(c);
   g.setFontAlign(1,-1,0);
   g.drawString(value, 126, y);
@@ -853,9 +844,9 @@ Bangle.setUI({mode:"clock",remove:function() {
     Bangle.removeListener("lock",onLock);
     Bangle.removeListener("charging",onCharge);
     Bangle.removeListener("touch",onTouch);
-    require('sched').setAlarm(TIMER_IDX, undefined);
     g.setTheme(themeBefore);
     widget_utils.cleanup();
+    // NB: Leave TIMER_IDX alarm alone; timer should persist while leaving and returning to clock.
 }});
 Bangle.loadWidgets();
 // Clear the screen once, at startup and draw clock
