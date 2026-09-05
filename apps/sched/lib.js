@@ -2,6 +2,35 @@ function timeToMillis(time) {
   return (time.getHours() * 3600000) + (time.getMinutes() * 60000) + (time.getSeconds() * 1000);
 }
 
+function setNextRepeatDate(alarm) {
+  let date = new Date(alarm.date);
+  let rp = alarm.rp;
+  if (rp===true) { // fallback in case rp is set wrong
+    date.setDate(date.getDate() + 1);
+  } else switch(rp.interval) { // rp is an object
+    case "day":
+      date.setDate(date.getDate() + rp.num);
+      break;
+    case "week":
+      date.setDate(date.getDate() + (rp.num * 7));
+      break;
+    case "month":
+      if (!alarm.od) alarm.od = date.getDate();
+      date = new Date(date.getFullYear(), date.getMonth() + rp.num, alarm.od);
+      if (date.getDate() != alarm.od) date.setDate(0);
+      break;
+    case "year":
+      if (!alarm.od) alarm.od = date.getDate();
+      date = new Date(date.getFullYear() + rp.num, date.getMonth(), alarm.od);
+      if (date.getDate() != alarm.od) date.setDate(0);
+      break;
+    default:
+      console.log(`sched: unknown repeat '${JSON.stringify(rp)}'`);
+      break;
+  }
+  alarm.date = date.toLocalISOString().slice(0,10);
+}
+
 // Return an array of all alarms
 exports.getAlarms = function() {
   // we do this direct in clkinfo.js to avoid loading the library
@@ -75,6 +104,81 @@ exports.setAlarm = function(id, alarm) {
   }
   exports.setAlarms(alarms);
   return alarm;
+};
+
+// Put an alarm on snooze for `snoozeTime` milliseconds (if already
+// snoozed, this will add to the existing snooze time).
+//
+// `alarms` is the list of alarms from getAlarms, and `alarm` is the
+// alarm object from that list to snooze.
+exports.snoozeAlarm = function(alarms, alarm, snoozeTime) {
+  if (alarms.indexOf(alarm) < 0) {
+    console.error('[sched] snoozeAlarm: Given alarm not in list of alarms');
+    return 'error';
+  }
+
+  if (alarm.ot === undefined) {
+    alarm.ot = alarm.t;
+  }
+  let time = new Date();
+  let currentTime = timeToMillis(time);
+  alarm.t = currentTime + snoozeTime;
+  alarm.t %= 86400000;
+
+  // This makes updateAlarm() recompute the last alarm date so
+  // that it works correctly if we're snoozing beyond midnight
+  delete alarm.last;
+
+  exports.updateAlarm(alarm);
+
+  // Save snoozed alarm (still a member of `alarms`) back to storage
+  exports.setAlarms(alarms);
+  Bangle.emit("alarmSnooze", alarm);
+  return 'snoozed';
+};
+
+// Stop and dismiss an expired alarm. This will cancel any snooze status
+// on the alarm, turn the alarm off (or delete the alarm if configured
+// to do so), or reschedule the alarm if it's set to repeat.
+//
+// Returns the string 'stopped', 'deleted', or 'rescheduled' to indicate
+// what action was taken.
+//
+// `alarms` is the list of alarms from getAlarms, and `alarm` is the
+// alarm object from that list to dismiss.
+exports.dismissAlarm = function(alarms, alarm) {
+  const alarmIndex = alarms.indexOf(alarm);
+  if (alarmIndex < 0) {
+    console.error('[sched] dismissAlarm: Given alarm not in list of alarms');
+    return 'error';
+  }
+
+  const settings = exports.getSettings();
+  let actionTaken = 'stopped';
+  let del = alarm.del === undefined ? settings.defaultDeleteExpiredTimers : alarm.del;
+  if (del) {
+    alarms.splice(alarmIndex, 1);
+    actionTaken = 'deleted';
+  } else {
+    if (alarm.date && alarm.rp) {
+      setNextRepeatDate(alarm);
+      actionTaken = 'rescheduled';
+    } else if (!alarm.timer) {
+      alarm.last = new Date().getDate();
+    }
+    if (alarm.ot !== undefined) {
+      alarm.t = alarm.ot;
+      delete alarm.ot;
+    }
+    if (!alarm.rp) {
+      alarm.on = false;
+    }
+  }
+
+  // Save dismissed alarm (still a member of `alarms`) back to storage
+  require("sched").setAlarms(alarms);
+  Bangle.emit("alarmDismiss", alarm);
+  return actionTaken;
 };
 
 /// Get time until the given alarm (object). Return undefined if alarm not enabled, or if 86400000 or more, alarm could be *more* than a day in the future

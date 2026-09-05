@@ -2,7 +2,7 @@
   "name": "Metric Imperial Converter",
   "shortName":"imc",
   "icon": "IMC.png",
-  "version":"0.01",
+  "version":"0.02",
   "allow_emulator": true,
   "author": "only-meeps",
   "description": "A tool for converting metric and imperial measurements",

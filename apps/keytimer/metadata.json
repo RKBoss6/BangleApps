@@ -1,7 +1,7 @@
 {
   "id": "keytimer",
   "name": "Keypad Timer",
-  "version": "0.04",
+  "version": "0.05",
   "author": "bruceblore",
   "description": "A timer with a keypad that runs in the background",
   "icon": "icon.png",
@@ -18,6 +18,10 @@
       "url": "app.js"
     },
     {
+      "name": "keytimer.boot.js",
+      "url": "boot.js"
+    },
+    {
       "name": "keytimer.img",
       "url": "icon.js",
       "evaluate": true
@@ -25,10 +29,6 @@
     {
       "name": "keytimer-com.js",
       "url": "common.js"
-    },
-    {
-      "name": "keytimer-ring.js",
-      "url": "ring.js"
     },
     {
       "name": "keytimer-keys.js",

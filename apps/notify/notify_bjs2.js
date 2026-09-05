@@ -140,10 +140,15 @@ exports.show = function(options) {
     if (pos > -size) setTimeout(anim, 15);
   }
   anim();
-  Bangle.on("touch", exports.hide);
+  Bangle.on("touch", onTouch);
   if (options.onHide)
     hideCallback = options.onHide;
 };
+
+function onTouch() {
+  E.stopEventPropagation && E.stopEventPropagation();
+  exports.hide();
+}
 
 /**
  options = {
@@ -156,8 +161,7 @@ exports.hide = function(options) {
   if (hideCallback) hideCallback({id:id});
   hideCallback = undefined;
   id = null;
-  Bangle.removeListener("touch", exports.hide);
-  E.stopEventPropagation && E.stopEventPropagation();
+  Bangle.removeListener("touch", onTouch);
   function anim() {
     pos += 4;
     if (pos > 0) {
