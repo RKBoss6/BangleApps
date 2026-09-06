@@ -62,8 +62,6 @@ var layout = new Layout({type:"v", bgCol: g.theme.bg, c: [
         const label = "UV: ";
         const labelW = g.stringWidth(label);
 
-        // Calculate centered position (4px block + 1px spacing) * blocks - last spacing
-        const totalW = labelW + uv * 5 - (uv > 0 ? 1 : 0);
         const x = l.x;
         const y = l.y + (l.h/2)-2;
 
