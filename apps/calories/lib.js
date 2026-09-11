@@ -10,7 +10,7 @@ let calcAge = function (rawBday) {
   return diffInDays / 365.2425;
 };
 let showSetMyProfilePrompt = function () {
-  var file = global.__FILE__;
+  let file = global.__FILE__;
   E.showPrompt(
     "'Calories' doesn't have MyProfile data needed to calculate calories burned!",
     {
@@ -27,7 +27,7 @@ let showSetMyProfilePrompt = function () {
   });
 };
 let showNeedHRPrompt = function () {
-  var file = global.__FILE__;
+  let file = global.__FILE__;
   E.showPrompt("'Calories' needs heart rate data in order to calculate!", {
     title: "Unable to calculate",
     buttons: { "Enable HR": true, Cancel: false }

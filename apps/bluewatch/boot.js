@@ -1,11 +1,11 @@
 
-var blueWatch = require("bluewatch");
-var settings = require("Storage").readJSON("bluewatch.settings.json") || {
+let blueWatch = require("bluewatch");
+let settings = require("Storage").readJSON("bluewatch.settings.json") || {
   overrideGPS: true
 };
-var weatherLocInterval;
-var systemDataInterval;
-var savedData = require("Storage").readJSON("bluewatchData.json") || {
+let weatherLocInterval;
+let systemDataInterval;
+let savedData = require("Storage").readJSON("bluewatchData.json") || {
   phoneConnected: false,
   appsUsingGPS: []
 };

@@ -28,11 +28,11 @@ if (!savedData.cachedBMR) savedData.cachedBMR = calModule.calcBMR(myProfile);
 if (!savedData.cachedMyProfile) savedData.cachedMyProfile = myProfile;
 
 if (JSON.stringify(savedData.cachedMyProfile) !== JSON.stringify(myProfile)) {
-  //recalculate static myprofile dependent variables
+  //recalculate static myprofile dependent letiables
   savedData.cachedBMR = calModule.calcBMR(myProfile);
   savedData.cachedMyProfile = myProfile;
 }
-//init global var
+//init global let
 global.calories = {
   activeCaloriesBurned: savedData.activeCaloriesBurned || 0,
   totalCaloriesBurned: savedData.totalCaloriesBurned || 0,
